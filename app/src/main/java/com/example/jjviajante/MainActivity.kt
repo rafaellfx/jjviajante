@@ -1,7 +1,10 @@
 package com.example.jjviajante
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -15,10 +18,22 @@ import com.example.jjviajante.model.UserDao
 import kotlinx.coroutines.*
 
 
+private const val PERMISSION_LOCATION = 13;
+
 class MainActivity : AppCompatActivity() {
+
+    private var permission = arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if(checkPermission(this, permission)) "" else Toast.makeText(this, "Vá em configuração e configure as permissões", Toast.LENGTH_SHORT).show()
+
+        // Solicita a permissão verificando a vercão android
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(permission, PERMISSION_LOCATION)
+        };
 
         // Se logado vai para a tela direto dos maps
         _isLog();
@@ -133,6 +148,50 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if(requestCode == PERMISSION_LOCATION){
+            var allSuccess = true;
+            for(i in permissions.indices){
+                if(grantResults[i] == PackageManager.PERMISSION_DENIED){
+
+                    allSuccess = false;
+
+                    var requestAgain = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && shouldShowRequestPermissionRationale(permissions[i])
+
+                    if(requestAgain){
+                        Toast.makeText(this, "Permissão negada", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(this, "Vá em configuração e configure as permissões", Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            }
+
+            if(allSuccess){
+                Toast.makeText(this, "Permissão concedida", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
+
+
+    // Verifica a permissão para acessar o maps
+    fun checkPermission(context: Context, permissionArray: Array<String>): Boolean {
+        var allSuccess = true
+
+        for (i in permissionArray.indices){
+            if(checkCallingOrSelfPermission(permissionArray[i]) == PackageManager.PERMISSION_DENIED){
+                allSuccess = false
+            }
+
+        }
+
+        return allSuccess
     }
 
 }
