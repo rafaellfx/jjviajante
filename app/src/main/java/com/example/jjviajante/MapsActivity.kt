@@ -10,6 +10,7 @@ import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -23,7 +24,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlin.random.Random
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -43,6 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
     }
 
     /**
@@ -67,32 +70,42 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if(locationGPS != null ) {
 
             // Meu marcador conforme minha localizacao
-            _myMarker(mMap, locationGPS!!, "Olá " + this.user.nome)
+            _myMarker(mMap, locationGPS!!.latitude, locationGPS!!.longitude, "Olá " + this.user.nome)
+
+            Log.i("TESTE", locationGPS!!.latitude.toString() +" , "+ locationGPS!!.longitude.toString())
+
+            _gym(mMap, locationGPS!!.latitude, locationGPS!!.longitude)
+
+            var btnFloat = findViewById<FloatingActionButton>(R.id.btnLogin);
+
+            btnFloat.setOnClickListener {
+                var random = List(2) { Random.nextDouble(-103.101, 0.023 )}
+                _myMarker(mMap, locationGPS!!.latitude, locationGPS!!.longitude, "Olá " + this.user.nome)
+                _gym(mMap, locationGPS!!.latitude, locationGPS!!.longitude)
+            }
 
 
-            val academia1 = LatLng(locationGPS!!.latitude -0.02, locationGPS!!.longitude +0.02)
-            mMap.addMarker(MarkerOptions().position(academia1).title("Academia 1"))
 
-            val academia2 = LatLng(locationGPS!!.latitude + 0.006, locationGPS!!.longitude +0.01)
-            mMap.addMarker(MarkerOptions().position(academia2).title("Academia 2"))
 
-            val academia3 = LatLng(locationGPS!!.latitude + 0.01, locationGPS!!.longitude)
-            mMap.addMarker(MarkerOptions().position(academia3).title("Academia 3"))
-
-            val academia4 = LatLng(locationGPS!!.latitude + -0.01, locationGPS!!.longitude)
-            mMap.addMarker(MarkerOptions().position(academia4).title("Academia 4"))
         } else{
             startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
         }
 
-
-
     }
 
-    private fun _myMarker(mMap: GoogleMap, locationGPS: Location, title : String = "") {
+    private fun _gym(mMap: GoogleMap, latitude: Double, longitude: Double) {
+        for (item in 0..10){
+            var random = List(2) { Random.nextDouble(-0.01, 0.020)}
+            val item = LatLng(latitude - random[0], longitude +random[1])
+            mMap.addMarker(MarkerOptions().position(item).title("Academia " + item +1))
+        }
+    }
+
+    private fun _myMarker(mMap: GoogleMap, latitude: Double, longitude: Double, title: String) {
+        mMap.clear()
         var circle = CircleOptions()
 
-        val self = LatLng(locationGPS!!.latitude, locationGPS!!.longitude)
+        val self = LatLng(latitude, longitude)
         // adicionando um circulo em até 3km
         circle.center(self)
             .radius(3000.0)
@@ -100,6 +113,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .fillColor(Color.argb(108, 0, 100, 255));
 
         mMap.addCircle(circle);
+
 
         // Adiciona meu marcador
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(self, 13f))
@@ -110,6 +124,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
         ).showInfoWindow()
     }
+
 
     @SuppressLint("MissingPermission")
     private fun _myLocationForGPS(): Location? {

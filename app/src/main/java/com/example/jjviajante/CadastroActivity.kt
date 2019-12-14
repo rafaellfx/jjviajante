@@ -75,7 +75,7 @@ class CadastroActivity : AppCompatActivity() {
             newUser.nome = nome.text.toString();
             newUser.email = email.text.toString();
             newUser.senha = senha.text.toString();
-            
+
             if(newUser.nome != "" && newUser.email !="" && newUser.senha != "") {
 
                 GlobalScope.launch(context = Dispatchers.Main) {
