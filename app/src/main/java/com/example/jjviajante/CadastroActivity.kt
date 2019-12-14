@@ -75,38 +75,43 @@ class CadastroActivity : AppCompatActivity() {
             newUser.nome = nome.text.toString();
             newUser.email = email.text.toString();
             newUser.senha = senha.text.toString();
+            
+            if(newUser.nome != "" && newUser.email !="" && newUser.senha != "") {
 
-            GlobalScope.launch(context = Dispatchers.Main) {
+                GlobalScope.launch(context = Dispatchers.Main) {
 
-                withContext(context = Dispatchers.IO){
+                    withContext(context = Dispatchers.IO){
 
-                    var dao = AppDatabase.getDb(this@CadastroActivity).await();
-                    var id = 0;
+                        var dao = AppDatabase.getDb(this@CadastroActivity).await();
+                        var id = 0;
 
-                    if(isUpdate){
-                        id = dao.update(newUser);
-                    }else{
-                        id = dao.insert(newUser).toInt();
-                    }
-
-                    if( id > 0 ) {
-                        var newUser = dao.getUser(id.toLong())!!;
-                        var intent = Intent(this@CadastroActivity, MapsActivity::class.java).apply {
-                            putExtra("user", newUser)
-                        }
-
-                        if(!isUpdate){
-                            setResult(Activity.RESULT_OK, intent);
+                        if(isUpdate){
+                            id = dao.update(newUser);
                         }else{
-                            startActivity(intent)
+                            id = dao.insert(newUser).toInt();
                         }
 
-                        finish()
+                        if( id > 0 ) {
+                            var newUser = dao.getUser(id.toLong())!!;
+                            var intent = Intent(this@CadastroActivity, MapsActivity::class.java).apply {
+                                putExtra("user", newUser)
+                            }
+
+                            if(!isUpdate){
+                                setResult(Activity.RESULT_OK, intent);
+                            }else{
+                                startActivity(intent)
+                            }
+
+                            finish()
+                        }
                     }
                 }
-            }
 
-            Toast.makeText(this, "Usuario " + user.nome + " adicionado com sucesso!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Usuario " + user.nome + " adicionado com sucesso!", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this, "Todos os campos são obrigatórios", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -114,5 +119,6 @@ class CadastroActivity : AppCompatActivity() {
         nome = findViewById<EditText>(R.id.edtName)
         email = findViewById<EditText>(R.id.edtEmail)
         senha = findViewById<EditText>(R.id.edtPassword)
+
     }
 }

@@ -30,10 +30,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap;
     private  var locationGPS: Location? = null
-    private  var locationNetwork: Location? = null
     private lateinit var locationManager: LocationManager
     private var hasGPS = false
-    private var hasNetwork = false
     private lateinit var user: User;
 
 
@@ -56,22 +54,77 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
-    @SuppressLint("MissingPermission")
+
     override fun onMapReady(googleMap: GoogleMap) {
 
         mMap = googleMap
         mMap.setMyLocationEnabled(true);
         mMap.uiSettings.setZoomControlsEnabled(true);
 
+        locationGPS = _myLocationForGPS()
+
+
+        if(locationGPS != null ) {
+
+            // Meu marcador conforme minha localizacao
+            _myMarker(mMap, locationGPS!!, "Olá " + this.user.nome)
+
+
+            val academia1 = LatLng(locationGPS!!.latitude -0.02, locationGPS!!.longitude +0.02)
+            mMap.addMarker(MarkerOptions().position(academia1).title("Academia 1"))
+
+            val academia2 = LatLng(locationGPS!!.latitude + 0.006, locationGPS!!.longitude +0.01)
+            mMap.addMarker(MarkerOptions().position(academia2).title("Academia 2"))
+
+            val academia3 = LatLng(locationGPS!!.latitude + 0.01, locationGPS!!.longitude)
+            mMap.addMarker(MarkerOptions().position(academia3).title("Academia 3"))
+
+            val academia4 = LatLng(locationGPS!!.latitude + -0.01, locationGPS!!.longitude)
+            mMap.addMarker(MarkerOptions().position(academia4).title("Academia 4"))
+        } else{
+            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+        }
+
+
+
+    }
+
+    private fun _myMarker(mMap: GoogleMap, locationGPS: Location, title : String = "") {
+        var circle = CircleOptions()
+
+        val self = LatLng(locationGPS!!.latitude, locationGPS!!.longitude)
+        // adicionando um circulo em até 3km
+        circle.center(self)
+            .radius(3000.0)
+            .strokeWidth(1F)
+            .fillColor(Color.argb(108, 0, 100, 255));
+
+        mMap.addCircle(circle);
+
+        // Adiciona meu marcador
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(self, 13f))
+        mMap.addMarker(
+            MarkerOptions()
+                .position(self)
+                .title(title)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+        ).showInfoWindow()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun _myLocationForGPS(): Location? {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager;
 
         hasGPS = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
-        if(hasGPS){
-            if(hasGPS){
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000,0f,object: LocationListener{
+        if (hasGPS) {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                5000,
+                0f,
+                object : LocationListener {
                     override fun onLocationChanged(location: Location?) {
-                        if(location != null){
+                        if (location != null) {
                             locationGPS = location
                         }
                     }
@@ -87,54 +140,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 })
 
-                val localGPSLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                if(localGPSLocation != null)
-                    locationGPS = localGPSLocation
-            }
-
-
-            if(locationGPS != null ) {
-
-                var circle = CircleOptions()
-
-
-                val self = LatLng(locationGPS!!.latitude, locationGPS!!.longitude)
-                // adicionando um circulo em até 3km
-                circle.center(self)
-                    .radius(3000.0)
-                    .strokeWidth(1F)
-                    .fillColor(Color.argb(108, 0, 100, 255))
-                mMap.addCircle(circle);
-
-                // Adiciona meu marcador
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(self, 13f))
-                mMap.addMarker(
-                    MarkerOptions()
-                        .position(self)
-                        .title("Olá " + this.user.nome)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                ).showInfoWindow()
-
-
-                val academia1 = LatLng(locationGPS!!.latitude -0.02, locationGPS!!.longitude +0.02)
-                mMap.addMarker(MarkerOptions().position(academia1).title("Academia 1"))
-
-                val academia2 = LatLng(locationGPS!!.latitude + 0.006, locationGPS!!.longitude +0.01)
-                mMap.addMarker(MarkerOptions().position(academia2).title("Academia 2"))
-
-                val academia3 = LatLng(locationGPS!!.latitude + 0.01, locationGPS!!.longitude)
-                mMap.addMarker(MarkerOptions().position(academia3).title("Academia 3"))
-
-                val academia4 = LatLng(locationGPS!!.latitude + -0.01, locationGPS!!.longitude)
-                mMap.addMarker(MarkerOptions().position(academia4).title("Academia 4"))
-            }
-
-        }else{
-            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            val localGPSLocation =
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            if (localGPSLocation != null)
+                return localGPSLocation
         }
-
-
-
+        return null
     }
 
 

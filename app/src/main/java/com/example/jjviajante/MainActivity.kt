@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             if(allSuccess){
-                Toast.makeText(this, "Permissão concedida", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Permissão concedida", Toast.LENGTH_SHORT).show();
             }
         }
 
